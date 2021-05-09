@@ -1,7 +1,7 @@
 <template>
   <aside
     id="right-panel"
-    class="relative bg-gray-800 border-l border-gray-600 h-full w-64 flex flex-col overflow-hidden flex-shrink-0"
+    class="relative bg-gray-800 border-l border-gray-600 h-full w-64 flex flex-col scrollbar overflow-auto flex-shrink-0"
   >
     <header
       class="text-white text-xs font-medium tracking-wide flex justify-between items-center p-3 pb-0 ">
@@ -45,13 +45,10 @@
 <script>
 import BlockIcon from './BlockIcon.vue';
 import Icon from "./Icon.vue";
+import { mapState } from 'vuex';
 
 export default {
   props: {
-    layers: {
-      type: Array,
-      default: () => []
-    },
     activeLayerID: {
       type: Number,
       default: null,
@@ -76,6 +73,9 @@ export default {
 
       this.$emit('layer-selected', layerID);
     }
+  },
+  computed: {
+    ...mapState(['layers'])
   }
 };
 </script>

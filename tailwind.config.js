@@ -17,6 +17,10 @@ module.exports = {
           800: '#171B1C',
           900: '#101314',
         },
+      },
+      fontFamily: {
+        'merriweather': [ 'Merriweather', 'serif' ],
+        'nunito': [ 'Nunito', 'sans-serif' ]
       }
     },
   },

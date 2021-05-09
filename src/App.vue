@@ -11,7 +11,7 @@
       />
 
       <section
-        class="canvas w-full h-full relative z-10 scrollbar text-center text-none overflow-auto"
+        class="canvas w-full h-full relative z-10 scrollbar overflow-auto"
       >
         <template
           v-for="(layer, index) of layers"
@@ -23,14 +23,16 @@
             @input="event => onInput(event, index)"
             @click="event => listenDblClick(event, layer.id)"
             onblur="this.contentEditable=false;"
-            :class="{ 'active': activeLayerID == layer.id }"
+            :class="getClassList(layer)"
           >
             {{ layer.text }}
           </div>
         </template>
       </section>
 
-      <Design />
+      <Design
+        :active-layer-ID="activeLayerID"
+      />
     </section>
   </main>
 </template>
@@ -39,6 +41,7 @@
 import Design from "./components/Design.vue";
 import Layers from "./components/Layers.vue";
 import NavBar from "./components/NavBar.vue";
+import { mapState } from 'vuex';
 
 export default {
   name: "App",
@@ -50,7 +53,6 @@ export default {
   data() {
     return {
       activeLayerID: null,
-      layers: [],
       blankLayer: {
         id: null,
         name: 'Block',
@@ -62,12 +64,7 @@ export default {
   },
   methods: {
     createLayer() {
-      // this.$refs.layers.innerHTML = `<div>Hi, I am a layer 👋🏼</div>`;
-      const layer = JSON.parse(JSON.stringify(Object.assign(this.blankLayer, {
-        id: Date.now(),
-      })));
-
-      this.layers.push( layer );
+      this.$store.commit('createLayer');
     },
     onInput(e, index) {
       this.layers[index].text = e.target.innerText;
@@ -86,6 +83,21 @@ export default {
     deleteLayer(index) {
       alert(index);
       this.layers.splice(index, 1);
+    },
+    getClassList(layer) {
+      const classlist = {
+        'active': this.activeLayerID === layer.id,
+      }
+      const stylesKeys = Object.keys(layer.styles);
+
+      stylesKeys.forEach(key => {
+        const val = layer.styles[key]['value'];
+        if( val ) {
+          classlist[val] = true;
+        }
+      });
+
+      return classlist;
     }
   },
   computed: {
@@ -95,15 +107,18 @@ export default {
         html += `<${layer.tag}>${layer.text}</${layer.tag}>`;
       });
       return html;
-    }
+    },
+    ...mapState(['layers'])
   },
   created() {
     document.addEventListener('keydown', function(e) {
       if( ( e.key === "Backspace" || e.key === "Delete" ) && this.activeLayerID ) {
         const el = document.querySelector(`[data-yid="${this.activeLayerID}"]`);
         const sideEl = document.querySelector(`[data-ysidebar-id="${this.activeLayerID}"] .text-block`);
+        const elEditable = el.contentEditable != 'true';
+        const sideElEditable = sideEl.contentEditable != 'true';
 
-        if( (el && el.contentEditable == 'false') || (sideEl && sideEl.contentEditable == 'false') ) {
+        if( (el && elEditable) && (sideEl && sideElEditable) ) {
           let index = -1;
           for (let i = 0; i < this.layers.length; i++) {
             const layer = this.layers[i];
