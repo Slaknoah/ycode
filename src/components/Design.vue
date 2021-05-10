@@ -186,8 +186,17 @@ export default {
   },
   watch: {
     activeLayerID(value) {
-      const layer = this.$store.getters.getLayerById(value);
-      this.styles = layer.styles;
+      if( value ) {
+        const layer = this.$store.getters.getLayerById(value);
+        this.styles = JSON.parse( JSON.stringify( layer.styles ) );
+      }
+    },
+    styles: {
+      deep: true,
+
+      handler(value) {
+        this.$store.commit('updateLayerStyle', { layerID: this.activeLayerID, styles: value })
+      }
     }
   },
   setup() {
